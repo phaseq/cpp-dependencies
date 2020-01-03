@@ -81,6 +81,17 @@ void ExtractPublicDependencies(std::unordered_map<std::string, Component *> &com
         }
         comp->pubDeps.erase(comp);
         comp->privDeps.erase(comp);
+
+        for (auto &fp : comp->files) {
+            if (fp->hasExternalInclude) {
+                for (auto &dep : fp->dependencies) {
+                    comp->privDeps.erase(dep->component);
+                    comp->pubDeps.insert(dep->component);
+                    dep->component->privLinks.erase(comp);
+                    dep->component->pubLinks.insert(comp);
+                }
+            }
+        }
     }
 }
 

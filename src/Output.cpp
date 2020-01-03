@@ -200,14 +200,26 @@ void PrintCyclesForTarget(Component *c) {
 
 void PrintLinksForTarget(Component *c) {
     std::vector<std::string> sortedPubLinks(SortedNiceNames(c->pubLinks));
-    std::cout << "Public linked (" << sortedPubLinks.size() << "):";
+    std::cout << "Publicly used by (" << sortedPubLinks.size() << "):";
     for (auto &d : sortedPubLinks) {
         std::cout << ' ' << d;
     }
 
     std::vector<std::string> sortedPrivLinks(SortedNiceNames(c->privLinks));
-    std::cout << "Private linked (" << sortedPrivLinks.size() << "):";
+    std::cout << "\n\nPrivately used by (" << sortedPrivLinks.size() << "):";
     for (auto &d : sortedPrivLinks) {
+        std::cout << ' ' << d;
+    }
+
+    std::vector<std::string> sortedPubDeps(SortedNiceNames(c->pubDeps));
+    std::cout << "\n\nPublicly depending on (" << sortedPubDeps.size() << "): ";
+    for (auto &d : sortedPubDeps) {
+        std::cout << ' ' << d;
+    }
+
+    std::vector<std::string> sortedPrivDeps(SortedNiceNames(c->privDeps));
+    std::cout << "\n\nPrivately depending on (" << sortedPrivDeps.size() << "): ";
+    for (auto &d : sortedPrivDeps) {
         std::cout << ' ' << d;
     }
     std::cout << '\n';
@@ -345,7 +357,14 @@ void FindSpecificLink(const Configuration& config, std::unordered_map<std::strin
     std::cout << "No path could be found from " << from->NiceName('.') << " to " << to->NiceName('.') << '\n';
 }
 
-static void UpdateIncludeFor(std::unordered_map<std::string, File>& files, std::unordered_map<std::string, std::string> &includeLookup, File* from, Component* comp, const std::string& desiredPath, bool isAbsolute) {
+static void UpdateIncludeFor(
+    std::unordered_map<std::string, File>& files,
+    std::unordered_map<std::string, std::string> &includeLookup,
+    File* from,
+    Component* comp,
+    const std::string& desiredPath,
+    bool isAbsolute)
+{
     filesystem::path newName = from->path.generic_string() + ".new";
     {
         streams::ifstream in(from->path);
@@ -372,7 +391,7 @@ static void UpdateIncludeFor(std::unordered_map<std::string, File>& files, std::
                     if (!postLookup.empty() && postLookup != "INVALID" && files.find(postLookup) != files.end()) {
                         File* f = &files.find(postLookup)->second;
                         std::string path = f->path.generic_string();
-                        std::string pathToStrip = (isAbsolute ? "." : comp->root.generic_string()) + "/";
+                        std::string pathToStrip = (isAbsolute ? "." : comp->root/*.parent_path()*/.generic_string()) + "/";
                         if (desiredPath != ".") pathToStrip += desiredPath + "/";
                         std::string newInclude = path.substr(pathToStrip.size());
                         std::string componentPath = comp->root.generic_string();

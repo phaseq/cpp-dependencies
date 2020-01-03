@@ -202,7 +202,12 @@ private:
         if (args.size() != 2) {
             std::cout << "--graph-target requires a single component and a single output file name.\n";
         } else {
-            PrintGraphOnTarget(config, args[1], components[targetFrom(args[0])]);
+            Component* c = components[targetFrom(args[0])];
+            if (!c) {
+                std::cout << "No component called " << args[0] << '\n';
+            } else {
+                PrintGraphOnTarget(config, args[1], c);
+            }
         }
     }
     void Cycles(std::vector<std::string> args) {
@@ -210,7 +215,12 @@ private:
         if (args.empty()) {
             std::cout << "No targets specified for finding in- and out-going links.\n";
         } else {
-            PrintCyclesForTarget(components[targetFrom(args[0])]);
+            Component* c = components[targetFrom(args[0])];
+            if (!c) {
+                std::cout << "No component called " << args[0] << '\n';
+            } else {
+                PrintCyclesForTarget(c);
+            }
         }
     }
     void Stats(std::vector<std::string>) {
